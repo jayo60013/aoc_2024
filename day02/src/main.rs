@@ -34,10 +34,9 @@ where
     contents
         .lines()
         .map(|line| {
-            return line
-                .split_whitespace()
+            line.split_whitespace()
                 .map(|s| s.parse::<i32>().unwrap())
-                .collect::<Vec<i32>>();
+                .collect::<Vec<i32>>()
         })
         .filter(|record| safety_func(record))
         .count()
