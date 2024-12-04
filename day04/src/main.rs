@@ -84,22 +84,12 @@ fn part2(grid: &Grid) -> i32 {
 }
 
 fn get_xmas_positions(x: usize, y: usize, dx: i32, dy: i32) -> [(usize, usize, char); 3] {
+    let x_i32 = x as i32;
+    let y_i32 = y as i32;
     [
-        (
-            ((x as i32) + dx * 1) as usize,
-            ((y as i32) + dy * 1) as usize,
-            'M',
-        ),
-        (
-            ((x as i32) + dx * 2) as usize,
-            ((y as i32) + dy * 2) as usize,
-            'A',
-        ),
-        (
-            ((x as i32) + dx * 3) as usize,
-            ((y as i32) + dy * 3) as usize,
-            'S',
-        ),
+        ((x_i32 + dx * 1) as usize, (y_i32 + dy * 1) as usize, 'M'),
+        ((x_i32 + dx * 2) as usize, (y_i32 + dy * 2) as usize, 'A'),
+        ((x_i32 + dx * 3) as usize, (y_i32 + dy * 3) as usize, 'S'),
     ]
 }
 
