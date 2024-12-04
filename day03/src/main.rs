@@ -1,4 +1,4 @@
-use regex::Regex;
+use regex::{Captures, Regex};
 use std::{env, fs};
 
 fn main() {
@@ -19,42 +19,38 @@ fn main() {
 
 fn part1(contents: &str) -> i32 {
     let mul_re = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
-    mul_re
-        .captures_iter(contents)
-        .map(|capture| {
-            let l: i32 = capture[1].parse().unwrap();
-            let r: i32 = capture[2].parse().unwrap();
-            l * r
-        })
-        .sum()
+    mul_re.captures_iter(contents).map(calc_mul).sum()
 }
 
 fn part2(contents: &str) -> i32 {
+    // Match either mul(\d,\d), do() or don't()
+    // Capture groups for two digits in mul(\d,\d)
     let instruction_re = Regex::new(r"mul\((\d+),(\d+)\)|do\(\)|don\'t\(\)").unwrap();
 
     let mut is_mul_enabled = true;
     let mut total = 0;
 
     for capture in instruction_re.captures_iter(contents) {
-        if let Some(instr) = capture.get(0).map(|m| m.as_str()) {
-            match instr {
-                "do()" => {
-                    is_mul_enabled = true;
+        let instr = capture.get(0).unwrap().as_str();
+        match instr {
+            "do()" => {
+                is_mul_enabled = true;
+            }
+            "don't()" => {
+                is_mul_enabled = false;
+            }
+            _ => {
+                if is_mul_enabled {
+                    total += calc_mul(capture);
                 }
-                "don't()" => {
-                    is_mul_enabled = false;
-                }
-                _ => {
-                    if is_mul_enabled {
-                        if let (Some(l), Some(r)) = (capture.get(1), capture.get(2)) {
-                            let l: i32 = l.as_str().parse().unwrap();
-                            let r: i32 = r.as_str().parse().unwrap();
-                            total += l * r;
-                        }
-                    }
-                }
-            };
+            }
         }
     }
     total
+}
+
+fn calc_mul(capture: Captures) -> i32 {
+    let l: i32 = capture[1].parse().unwrap();
+    let r: i32 = capture[2].parse().unwrap();
+    l * r
 }
