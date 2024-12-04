@@ -12,22 +12,22 @@ fn main() {
     let filename = args.get(1).unwrap();
     let contents = fs::read_to_string(filename).unwrap();
 
-    println!("Part 1: {part1_ans}", part1_ans = part1(contents.clone()));
-    println!("Part 2: {part2_ans}", part2_ans = part2(contents));
+    println!("Part 1: {part1_ans}", part1_ans = part1(&contents));
+    println!("Part 2: {part2_ans}", part2_ans = part2(&contents));
 }
 
-fn part1(contents: String) -> usize {
+fn part1(contents: &str) -> usize {
     apply_record_safety(|record| is_record_safe(record), contents)
 }
 
-fn part2(contents: String) -> usize {
+fn part2(contents: &str) -> usize {
     apply_record_safety(
         |record| is_record_safe(record) || is_record_safe_without_one_element(record),
         contents,
     )
 }
 
-fn apply_record_safety<F>(safety_func: F, contents: String) -> usize
+fn apply_record_safety<F>(safety_func: F, contents: &str) -> usize
 where
     F: Fn(&Vec<i32>) -> bool,
 {
@@ -38,7 +38,7 @@ where
                 .map(|s| s.parse::<i32>().unwrap())
                 .collect::<Vec<i32>>()
         })
-        .filter(|record| safety_func(record))
+        .filter(safety_func)
         .count()
 }
 

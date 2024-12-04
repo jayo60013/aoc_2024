@@ -12,11 +12,11 @@ fn main() {
     let filename = args.get(1).unwrap();
     let contents = fs::read_to_string(filename).unwrap();
 
-    println!("Part 1: {part1_ans}", part1_ans = part1(contents.clone()));
-    println!("Part 2: {part2_ans}", part2_ans = part2(contents));
+    println!("Part 1: {part1_ans}", part1_ans = part1(&contents));
+    println!("Part 2: {part2_ans}", part2_ans = part2(&contents));
 }
 
-fn part1(contents: String) -> i32 {
+fn part1(contents: &str) -> i32 {
     let (mut left, mut right) = parse_input(contents);
 
     left.sort_unstable();
@@ -28,7 +28,7 @@ fn part1(contents: String) -> i32 {
         .sum()
 }
 
-fn part2(contents: String) -> i32 {
+fn part2(contents: &str) -> i32 {
     let (left, right) = parse_input(contents);
 
     let left_counts: HashMap<i32, i32> = construct_count_map_from_list(left);
@@ -51,7 +51,7 @@ fn construct_count_map_from_list(list: Vec<i32>) -> HashMap<i32, i32> {
     count_map
 }
 
-fn parse_input(contents: String) -> (Vec<i32>, Vec<i32>) {
+fn parse_input(contents: &str) -> (Vec<i32>, Vec<i32>) {
     let mut left: Vec<i32> = Vec::new();
     let mut right: Vec<i32> = Vec::new();
 
