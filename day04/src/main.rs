@@ -60,8 +60,8 @@ fn part1(grid: &Grid) -> i32 {
 fn part2(grid: &Grid) -> i32 {
     let mut total = 0;
 
-    for y in 1..(grid.h - 1) {
-        for x in 1..(grid.w - 1) {
+    for y in 1..grid.h {
+        for x in 1..grid.w {
             if grid.contents[y][x] != 'A' {
                 continue;
             }
