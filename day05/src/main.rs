@@ -39,6 +39,7 @@ fn process_page_numbers_2(rules: &HashMap<&str, Vec<&str>>, page_numbers: &Vec<&
         return 0;
     }
 
+    //Keep swapping until part 1 works (today killed me)
     while process_page_numbers(rules, &tmp) == 0 {
         'outer: for (i, &page_number) in tmp.iter().enumerate() {
             if let Some(others) = rules.get(page_number) {
