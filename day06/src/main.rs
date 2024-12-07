@@ -17,59 +17,138 @@ fn main() {
 }
 
 fn part1(input: &str) -> usize {
-    let grid = parse_input(input);
-    let (width, height) = (grid[0].len() as i32, grid.len() as i32);
-    let mut pos = get_start_pos(input);
-    let mut dir = (0, -1);
-    let mut visited: HashSet<(i32, i32)> = HashSet::new();
+    let obstacles = parse_obstacles(input);
+    let (width, height) = get_grid_dimensions(input);
 
-    while 0 <= pos.0 && pos.0 < width && 0 <= pos.1 && pos.1 < height {
+    let mut pos = get_start_pos(input);
+    let mut dir = UP;
+    let mut visited: HashSet<Point> = HashSet::new();
+
+    while check_if_point_in_grid(&pos, width, height) {
         visited.insert(pos);
-        (pos, dir) = step_guard(&grid, pos, dir);
+        pos = step_guard(&obstacles, pos, &mut dir, width, height);
     }
     visited.len()
 }
 
-fn part2(_input: &str) -> i32 {
-    return 0;
-}
+fn part2(input: &str) -> usize {
+    let obstacles = parse_obstacles(input);
+    let (width, height) = get_grid_dimensions(input);
+    let start_pos = get_start_pos(input);
+    let mut pos = start_pos;
+    let mut dir = UP;
+    let mut visited: HashSet<Point> = HashSet::new();
 
-fn step_guard(grid: &Vec<Vec<char>>, pos: (i32, i32), dir: (i32, i32)) -> ((i32, i32), (i32, i32)) {
-    let nx = pos.0 + dir.0;
-    let ny = pos.1 + dir.1;
-
-    if nx < 0 || nx >= grid[0].len() as i32 || ny < 0 || ny >= grid.len() as i32 {
-        return ((nx, ny), dir);
+    while check_if_point_in_grid(&pos, width, height) {
+        visited.insert(pos);
+        pos = step_guard(&obstacles, pos, &mut dir, width, height);
     }
 
-    let x = nx as usize;
-    let y = ny as usize;
-    if grid[y][x] == '.' || grid[y][x] == '^' {
-        return ((nx, ny), dir);
-    }
+    visited
+        .into_iter()
+        .filter(|&visited_point| visited_point != start_pos)
+        .filter(|&visited_point| {
+            let mut additional_obstacles = obstacles.clone();
+            additional_obstacles.insert(visited_point);
 
-    return step_guard(grid, pos, rotate_dir(dir));
+            check_for_cycle(start_pos, additional_obstacles, width, height)
+        })
+        .count()
 }
 
-fn rotate_dir(in_dir: (i32, i32)) -> (i32, i32) {
+fn check_for_cycle(start_pos: Point, obstacles: HashSet<Point>, width: i32, height: i32) -> bool {
+    let mut pos = start_pos;
+    let mut dir = UP;
+    let mut route: HashSet<(i32, i32, i32, i32)> = HashSet::new();
+
+    while check_if_point_in_grid(&pos, width, height) {
+        if !route.insert((pos.x, pos.y, dir.x, dir.y)) {
+            return true;
+        }
+        pos = step_guard(&obstacles, pos, &mut dir, width, height);
+    }
+    return false;
+}
+
+fn step_guard(
+    obstacles: &HashSet<Point>,
+    pos: Point,
+    dir: &mut Point,
+    width: i32,
+    height: i32,
+) -> Point {
+    loop {
+        let np = Point {
+            x: pos.x + dir.x,
+            y: pos.y + dir.y,
+        };
+
+        // Guard exited grid or step ahead clear
+        if !check_if_point_in_grid(&np, width, height) || !obstacles.contains(&np) {
+            return np;
+        }
+
+        *dir = rotate_dir(*dir);
+    }
+}
+
+const UP: Point = Point { x: 0, y: -1 };
+const DOWN: Point = Point { x: 0, y: 1 };
+const LEFT: Point = Point { x: -1, y: 0 };
+const RIGHT: Point = Point { x: 1, y: 0 };
+
+fn rotate_dir(in_dir: Point) -> Point {
     return match in_dir {
-        (0, -1) => (1, 0),
-        (1, 0) => (0, 1),
-        (0, 1) => (-1, 0),
-        (-1, 0) => (0, -1),
-        _ => panic!("Invalid dir"),
+        UP => RIGHT,
+        RIGHT => DOWN,
+        DOWN => LEFT,
+        LEFT => UP,
+        _ => unreachable!(),
     };
 }
 
-fn parse_input(input: &str) -> Vec<Vec<char>> {
-    input.lines().map(|line| line.chars().collect()).collect()
+fn check_if_point_in_grid(p: &Point, width: i32, height: i32) -> bool {
+    return 0 <= p.x && p.x < width as i32 && 0 <= p.y && p.y < height as i32;
 }
 
-fn get_start_pos(input: &str) -> (i32, i32) {
-    for (i, line) in input.lines().enumerate() {
-        if let Some(j) = line.find('^') {
-            return (j as i32, i as i32);
-        };
-    }
-    panic!("Could not find start");
+fn get_grid_dimensions(input: &str) -> (i32, i32) {
+    let width = input.split_once('\n').unwrap().0.len() as i32;
+    let height = input.lines().count() as i32;
+    (width, height)
+}
+
+#[derive(Eq, PartialEq, Hash, Clone, Copy, Debug)]
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+fn parse_obstacles(input: &str) -> HashSet<Point> {
+    input
+        .lines()
+        .enumerate()
+        .fold(HashSet::new(), |mut set, (i, line)| {
+            line.char_indices()
+                .filter(|&(_, c)| c == '#')
+                .for_each(|(j, _)| {
+                    set.insert(Point {
+                        x: j as i32,
+                        y: i as i32,
+                    });
+                });
+            set
+        })
+}
+
+fn get_start_pos(input: &str) -> Point {
+    input
+        .lines()
+        .enumerate()
+        .find_map(|(i, line)| {
+            line.find('^').map(|j| Point {
+                x: j as i32,
+                y: i as i32,
+            })
+        })
+        .unwrap()
 }
