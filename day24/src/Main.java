@@ -17,9 +17,12 @@ public class Main {
 
         final long part1Answer = part1(wires);
         System.out.printf("Part 1: %d\n", part1Answer);
+
+        part2(wires);
     }
 
-    public static long part1(final Map<String, String> wires) {
+    public static long part1(final Map<String, String> input) {
+        final Map<String, String> wires = new HashMap<>(input);
         boolean isComputed = false;
         while (!isComputed) {
             for (final String key : wires.keySet()) {
@@ -63,6 +66,54 @@ public class Main {
             .map(wires::get)
             .collect(Collectors.joining());
         return Long.parseLong(binaryValue, 2);
+    }
+
+    public static void part2(final Map<String, String> wires) {
+        final String zs = wires.keySet().stream().filter(key->key.startsWith("z")).sorted(String::compareTo).collect(Collectors.joining(" -> "));
+        final String xs = zs.replaceAll("z", "x");
+        final String ys = zs.replaceAll("z", "y");
+
+        final String ands = wires.keySet().stream().filter(key -> wires.get(key).contains("AND")).collect(Collectors.joining("; "));
+        final String ors = wires.keySet().stream().filter(key -> wires.get(key).contains("OR")).collect(Collectors.joining("; "));
+        final String xors = wires.keySet().stream().filter(key -> wires.get(key).contains("XOR")).collect(Collectors.joining("; "));
+
+        // Put this into https://dreampuf.github.io/GraphvizOnline/?engine=dot#digraph%20G%20%7B%0A%0A%7D
+        System.out.printf("""
+            digraph G {
+                subgraph {
+                    node [style=filled,color=lightgreen]
+                    %s
+                }
+                subgraph {
+                    node [style=filled,color=gray]
+                    %s
+                }
+                subgraph {
+                    node [style=filled,color=gray]
+                    %s
+                }
+                subgraph {
+                    node [style=filled,color=pink]
+                    %s
+                }
+                subgraph {
+                    node [style=filled,color=yellow]
+                    %s
+                }
+                subgraph {
+                    node [style=filled,color=lightblue]
+                    %s
+                }
+            """, zs, xs, ys, ands, ors, xors);
+        for (final String key : wires.keySet()) {
+            final String[] parts = wires.get(key).split(" ");
+            if (parts.length != 3) continue;
+
+            final String left = parts[0];
+            final String right = parts[2];
+            System.out.printf("     %s -> %s; %s -> %s;\n", left, key, right, key);
+        }
+        System.out.printf("}\n");
     }
 
     public static Map<String, String> parseInput(final String input) {
