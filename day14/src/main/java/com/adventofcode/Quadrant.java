@@ -1,3 +1,5 @@
+package com.adventofcode;
+
 public enum Quadrant {
     TOP_LEFT,
     TOP_RIGHT,

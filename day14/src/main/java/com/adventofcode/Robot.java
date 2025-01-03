@@ -1,7 +1,9 @@
-public class Robot {
+package com.adventofcode;
 
-    //    public static final int WIDTH = 11;
-//    public static final int HEIGHT = 7;
+import static com.raylib.Colors.RAYWHITE;
+import static com.raylib.Raylib.DrawRectangle;
+
+public class Robot {
     public static final int WIDTH = 101;
     public static final int HEIGHT = 103;
 
@@ -17,9 +19,17 @@ public class Robot {
         this.vy = vy;
     }
 
-    public void step() {
-        final int nx = px + vx;
-        final int ny = py + vy;
+    public void stepForwards() {
+        step(true);
+    }
+
+    public void stepBackwards() {
+        step(false);
+    }
+
+    private void step(final boolean forwards) {
+        final int nx = (forwards) ? px + vx : px - vx;
+        final int ny = (forwards) ? py + vy : py - vy;
 
         if (nx < 0) {
             this.px = WIDTH + nx;
@@ -53,5 +63,9 @@ public class Robot {
         } else {
             return Quadrant.CENTRAL;
         }
+    }
+
+    public void draw(final int width, final int height) {
+        DrawRectangle(this.px * width, this.py * height, width, height, RAYWHITE);
     }
 }
