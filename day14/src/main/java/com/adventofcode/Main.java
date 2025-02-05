@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.raylib.Colors.BLACK;
+import static com.raylib.Colors.RAYWHITE;
 import static com.raylib.Raylib.*;
 
 
