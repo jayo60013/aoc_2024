@@ -8,47 +8,42 @@ fun main(args: Array<String>) {
     println("Part 1: $part1Answer")
 }
 
-fun part1(initialObstacleMap: Map<Vec2, Obstacle>, instructions: List<Instruction>, startPos: Vec2): Long {
+fun part1(initialObstacleMap: Map<Vec2, Obstacle>, instructions: List<Instruction>, startPos: Vec2): Int {
+    assert(startPos != Vec2(-1, -1))
     val obstacleMap = initialObstacleMap.toMutableMap()
     var currPos = startPos
 
     instructions.forEach { instr ->
         val nextPos = currPos.add(instr.dir)
-        val obj = obstacleMap[nextPos]
+        val obstacle = obstacleMap[nextPos]
 
-        if (obj == null) {
-            println("$currPos -> $nextPos Pushed into empty space")
-            currPos = nextPos
-        } else if (obj == Obstacle.WALL) {
-            // do nothing
-            println("$currPos Pushed into wall")
-        } else if (obj == Obstacle.BOX) {
-            var lookAhead = nextPos
-            while (obstacleMap[lookAhead] == Obstacle.BOX) {
-                lookAhead = lookAhead.add(instr.dir)
-                println("Looking ahead")
+        when (obstacle) {
+            null -> currPos = nextPos
+            Obstacle.BOX -> {
+                var lookAhead = nextPos
+                while (obstacleMap[lookAhead] == Obstacle.BOX) {
+                    lookAhead = lookAhead.add(instr.dir)
+                }
+
+                if (obstacleMap[lookAhead] == null) {
+                    obstacleMap[lookAhead] = Obstacle.BOX
+                    obstacleMap.remove(nextPos)
+                    currPos = nextPos
+                }
             }
 
-            if (obstacleMap[lookAhead] == null) {
-                obstacleMap[lookAhead] = Obstacle.BOX
-                obstacleMap.remove(nextPos)
-                println("$currPos -> $nextPos Pushed box from $nextPos -> $lookAhead")
-                currPos = nextPos
-            } else {
-                println("$currPos Pushed into box, can't move bc of wall")
+            else -> {
+                //do nothing
             }
         }
     }
     return calcAnswer(obstacleMap)
 }
 
-fun calcAnswer(map: Map<Vec2, Obstacle>): Long {
+fun calcAnswer(map: Map<Vec2, Obstacle>): Int {
     return map.entries
         .filter { it.value == Obstacle.BOX }
-        .fold(0) { acc, entry ->
-            println("$entry")
-            acc + entry.key.y * 100 + entry.key.x
-        }
+        .sumOf { it.key.y * 100 + it.key.x }
 }
 
 fun parseInput(input: String): Triple<Map<Vec2, Obstacle>, List<Instruction>, Vec2> {
@@ -68,11 +63,7 @@ fun parseInput(input: String): Triple<Map<Vec2, Obstacle>, List<Instruction>, Ve
             }
         }
     }
-
-    val instructionList = instructions.mapNotNull {
-        Instruction.fromSymbol(it)
-    }
-
+    val instructionList = instructions.mapNotNull(Instruction::fromSymbol)
     return Triple(obstacleMap, instructionList, robotPos)
 }
 
@@ -82,7 +73,7 @@ enum class Obstacle(val symbol: Char) {
     ROBOT('@');
 
     companion object {
-        private val symbolMap = entries.associateBy { it.symbol }
+        private val symbolMap = entries.associateBy(Obstacle::symbol)
         fun fromSymbol(symbol: Char): Obstacle? = symbolMap[symbol]
     }
 }
@@ -94,7 +85,7 @@ enum class Instruction(val symbol: Char, val dir: Vec2) {
     DOWN('v', Vec2(0, 1));
 
     companion object {
-        private val symbolMap = entries.associateBy { it.symbol }
+        private val symbolMap = entries.associateBy(Instruction::symbol)
         fun fromSymbol(symbol: Char): Instruction? = symbolMap[symbol]
     }
 }
